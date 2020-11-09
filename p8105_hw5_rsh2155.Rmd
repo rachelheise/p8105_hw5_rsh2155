@@ -1,0 +1,63 @@
+---
+title: "Homework 5"
+author: "Rachel Heise"
+date: "11/8/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+library(ggridges)
+```
+
+## Problem 2
+
+Create dataframe containing names of data files.
+```{r}
+longitudinal_df = 
+  tibble(files = list.files("./data/"))
+```
+
+
+Add data from each file to dataframe.
+```{r}
+longitudinal_df =
+  longitudinal_df %>% 
+  mutate(data = map(file.path("./data/", files), read_csv))
+```
+
+
+
+## Problem 3
+
+```{r}
+n = 30
+sigma = 5
+mu = 0
+
+
+t_test_sim = function(samp_size, mu, sigma) {
+  
+  sim_data = tibble(
+    x = rnorm(samp_size, mean = mu, sd = sigma)
+  )
+  
+  test = t.test(dataset)
+  
+  sim_data %>% 
+    mutate(  
+      sample_mean = pull(broom::tidy(test), estimate),
+      p_value = pull(broom::tidy(test), p.value)
+      )
+}
+```
+
+
+
+
+
+
+
+
+
