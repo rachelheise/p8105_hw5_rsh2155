@@ -10,26 +10,131 @@ library(tidyverse)
 library(rvest)
 library(ggridges)
 ```
+## Problem 1
+
+Import and clean data.
+```{r}
+homicide_df =
+  read_csv("./homicide_data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL")
+```
+
+```{r}
+aggregate_df =
+  homicide_df %>% 
+  group_by(city_state) %>% 
+  summarize(
+    hom_total = n(),
+    hom_unsolved = sum(resolved == "unsolved")
+  )
+```
+
+Prop test for a single city
+
+```{r}
+prop.test(
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_unsolved),
+  aggregate_df %>% filter(city_state == "Baltimore_MD") %>% pull(hom_total)) %>% 
+  broom::tidy()
+```
+
+Iterate
+
+```{r}
+results_df =
+  aggregate_df %>% 
+  mutate(
+    prop_tests = map2(.x = hom_unsolved, .y = hom_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+
+```
+
+
+```{r}
+results_df %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+Different option for nesting data and writing a function.
+```{r, error = TRUE}
+city_prop_test = function(df) {
+  
+  n_unsolved ...
+  n_total ...
+  
+  prop.test(....)
+  
+}
+homicide_df =
+  read_csv("./data/homicide-data.csv") %>% 
+  mutate(
+    city_state = str_c(city, state, sep = "_"),
+    resolved = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved",
+    )
+  ) %>% 
+  select(city_state, resolved) %>% 
+  filter(city_state != "Tulsa_AL") %>% 
+  nest(data = resolved)
+```
+
+
 
 ## Problem 2
 
-Create dataframe containing names of data files.
-```{r}
-longitudinal_df = 
-  tibble(files = list.files("./data/"))
-```
-
-
-Add data from each file to dataframe.
+Create dataframe containing names of data files. Add data from each file to dataframe.
 ```{r}
 longitudinal_df =
-  longitudinal_df %>% 
-  mutate(data = map(file.path("./data/", files), read_csv))
+  tibble(files = list.files("./lda_data/")) %>% 
+  mutate(data = map(file.path("./lda_data/", files), read_csv)) %>% 
+  unnest(data) %>% 
+  pivot_longer(week_1:week_8,
+               names_to = "week",
+               values_to = "observation") %>% 
+  mutate(week = substr(week, 6, 7),
+         files = substr(files, 1, 6),
+         full_subject = files) %>% 
+  separate(files, into = c("arm", "subject_id"), sep = "_")
+
 ```
 
+
+Spaghetti plot
+```{r}
+longitudinal_df %>% 
+  ggplot(aes(x = week, y = observation, group = full_subject, color = arm)) +
+  geom_line() +
+  labs(
+    title = "Observations Over Time for Control & Experimental Arms",
+    x = "Week",
+    y = "Observation"
+  )
+```
 
 
 ## Problem 3
+
+
+for 6 you should reject the null more of the time (conduct the same t test)
 
 ```{r}
 n = 30
