@@ -1,7 +1,7 @@
 ---
 title: "Homework 5"
 author: "Rachel Heise"
-date: "11/17/2020"
+date: "11/18/2020"
 output: github_document
 ---
 
@@ -11,7 +11,7 @@ library(rvest)
 library(ggridges)
 
 knitr::opts_chunk$set(
-  fig.width = 6,
+  fig.width = 7,
   fig.asp = 0.6,
   out.width = "90%"
 )
@@ -102,7 +102,8 @@ results_df %>%
     title = "Proportion of Unsolved Homicides by City",
     x = "City",
     y = "Est. Proportion of Unsolved Homicides"
-  )
+  ) +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
 ```
 
 ## Problem 2
@@ -181,12 +182,14 @@ sim_results %>%
             prop_reject = n_reject/5000) %>% 
   ggplot(aes(x = pop_mean, y = prop_reject)) +
   geom_point() +
+  geom_line() +
   labs(title = "True Mean vs. Proportion of Samples Rejected",
        y = "Proportion of Samples Rejected",
-       x = "Population Mean")
+       x = "Population Mean") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
 ```
 
-The greater the effect size, the greater the power will be. In the plot above, we can see that as the population mean increases we are able to reject a greater proportions of the samples and conclude the population means are not equal to 0.
+The greater the effect size, the greater the power will be because you are more easily able to correctly reject a false null hypothesis. In the plot above, we can see that as the population mean increases we are able to reject a greater proportions of the samples and conclude the population means are not equal to 0 with greater frequency.
 
 
 ```{r, message = FALSE}
@@ -195,9 +198,11 @@ sim_results %>%
   summarize(avg = mean(est_mean)) %>% 
   ggplot(aes(x = pop_mean, y = avg)) +
   geom_point() +
+  geom_line() +
   labs(title = "True Mean vs. Average Estimated Mean",
        x = "True Mean Value",
-       y = "Average Estimated Mean Value")
+       y = "Average Estimated Mean Value") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
 ```
 
 ```{r, message = FALSE}
@@ -207,9 +212,11 @@ sim_results %>%
   summarize(avg = mean(est_mean)) %>% 
   ggplot(aes(x = pop_mean, y = avg)) +
   geom_point() +
+  geom_line() +
   labs(title = "Population Mean vs. Average of Means for Rejected Samples",
        x = "Population Mean Value",
-       y = "Average of Means for Rejected Samples")
+       y = "Average of Means for Rejected Samples") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)))
 ```
 
 
